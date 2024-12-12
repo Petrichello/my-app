@@ -15,7 +15,7 @@ export default class TaskList extends React.Component {
   }
 
   render() {
-    const { tasks, onDeleted, onToggleCheck, onToggleEdit, editTask } = this.props;
+    const { tasks, onDeleted, onToggleCheck, onToggleEdit, editTask, onPaused, offPaused, tick } = this.props;
 
     const elements = tasks.map((element) => {
       const { id } = element;
@@ -27,6 +27,9 @@ export default class TaskList extends React.Component {
           onDeleted={() => onDeleted(id)}
           onToggleCheck={() => onToggleCheck(id)}
           onToggleEdit={() => onToggleEdit(id)}
+          onPaused={() => onPaused(id)}
+          offPaused={() => offPaused(id)}
+          tick={() => tick(id)}
           editTask={editTask}
         />
       );

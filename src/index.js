@@ -15,9 +15,9 @@ export default class App extends React.Component {
     filter: "all",
   };
 
-  addTask = (text) => {
+  addTask = (text, min, sec) => {
     if (text !== "") {
-      const newTask = this.createTask(text);
+      const newTask = this.createTask(text, min, sec);
 
       this.setState(({ taskData }) => {
         const newArr = [...taskData, newTask];
@@ -97,13 +97,94 @@ export default class App extends React.Component {
     this.setState({ filter });
   };
 
-  createTask(label) {
+  onPaused = (id) => {
+    this.setState(({ taskData }) => {
+      const idx = taskData.findIndex((el) => el.id === id);
+      const oldTask = taskData[idx];
+      const newTask = { ...oldTask, paused: true };
+
+      const newArr = [...taskData.slice(0, idx), newTask, ...taskData.slice(idx + 1)];
+
+      return {
+        taskData: newArr,
+      };
+    });
+  };
+
+  offPaused = (id) => {
+    const { taskData } = this.state;
+    this.setState(() => {
+      const idx = taskData.findIndex((el) => el.id === id);
+      const oldTask = taskData[idx];
+      const newTask = { ...oldTask, paused: false };
+
+      const newArr = [...taskData.slice(0, idx), newTask, ...taskData.slice(idx + 1)];
+
+      return {
+        taskData: newArr,
+      };
+    });
+    this.tick(id);
+  };
+
+  tick = (id) => {
+    const timerId = setInterval(() => {
+      const { taskData } = this.state;
+      const idx = taskData.findIndex((el) => el.id === id);
+      const { min, sec, paused } = taskData[idx];
+      if (paused) return clearInterval(timerId);
+
+      if ((min === 0 || min === "0") && sec === 0) {
+        this.setState(() => {
+          const oldTask = taskData[idx];
+          const newTask = { ...oldTask, paused: true };
+
+          const newArr = [...taskData.slice(0, idx), newTask, ...taskData.slice(idx + 1)];
+
+          return {
+            taskData: newArr,
+          };
+        });
+        return clearInterval(timerId);
+      }
+
+      if (sec === 0) {
+        this.setState(() => {
+          const oldTask = taskData[idx];
+          const newTask = { ...oldTask, min: min - 1, sec: 59 };
+
+          const newArr = [...taskData.slice(0, idx), newTask, ...taskData.slice(idx + 1)];
+
+          return {
+            taskData: newArr,
+          };
+        });
+      } else {
+        this.setState(() => {
+          const oldTask = taskData[idx];
+          const newTask = { ...oldTask, sec: sec - 1 };
+
+          const newArr = [...taskData.slice(0, idx), newTask, ...taskData.slice(idx + 1)];
+
+          return {
+            taskData: newArr,
+          };
+        });
+      }
+      return 1;
+    }, 1000);
+  };
+
+  createTask(label, min, sec) {
     return {
       label,
       editing: false,
       checked: false,
       creationTime: new Date(),
       id: this.maxId++,
+      min,
+      sec,
+      paused: true,
     };
   }
 
@@ -135,6 +216,9 @@ export default class App extends React.Component {
             onToggleCheck={this.onToggleCheck}
             onToggleEdit={this.onToggleEdit}
             editTask={this.editTask}
+            onPaused={this.onPaused}
+            offPaused={this.offPaused}
+            tick={this.tick}
           />
           <Footer
             tasks={taskCount}

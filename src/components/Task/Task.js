@@ -31,6 +31,13 @@ export default class Task extends React.Component {
     };
   }
 
+  // componentDidUpdate(prevProps) {
+  //   const { tick, id, paused } = this.props;
+  //   if (prevProps.paused !== paused) {
+  //     setInterval(tick(id), 1000);
+  //   }
+  // }
+
   onLabelChange = (e) => {
     this.setState({
       label: e.target.value,
@@ -50,7 +57,20 @@ export default class Task extends React.Component {
   };
 
   render() {
-    const { label, onDeleted, onToggleCheck, checked, editing, onToggleEdit, creationTime } = this.props;
+    const {
+      label,
+      onDeleted,
+      onToggleCheck,
+      checked,
+      editing,
+      onToggleEdit,
+      creationTime,
+      min,
+      sec,
+      paused,
+      offPaused,
+      onPaused,
+    } = this.props;
 
     let classNames = "";
     if (checked) {
@@ -59,13 +79,37 @@ export default class Task extends React.Component {
       classNames += "editing";
     }
 
+    let dis = "";
+    if (!paused) {
+      dis = true;
+    } else {
+      dis = false;
+    }
+
     return (
       <li className={classNames}>
         <div className="view">
           <input className="toggle" type="checkbox" onClick={onToggleCheck} defaultChecked={checked} />
           <label>
-            <span className="description">{label}</span>
-            <span className="created">
+            <span className="title">{label}</span>
+            <span className="description">
+              <button
+                type="button"
+                aria-label="Mute volume"
+                className="icon icon-play"
+                onClick={offPaused}
+                disabled={dis}
+              />
+              <button
+                type="button"
+                aria-label="Mute volume"
+                className="icon icon-pause"
+                onClick={onPaused}
+                disabled={!dis}
+              />
+              {`${min.toString().padStart(2, "0")}:${sec.toString().padStart(2, "0")}`}
+            </span>
+            <span className="description">
               created{" "}
               {formatDistanceToNow(new Date(creationTime), {
                 includeSeconds: true,
