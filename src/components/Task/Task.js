@@ -2,6 +2,7 @@ import React from "react";
 import "./Task.css";
 import { formatDistanceToNow } from "date-fns";
 import PropTypes from "prop-types";
+import classNames from "classnames";
 
 export default class Task extends React.Component {
   static defaultProps = {
@@ -31,12 +32,10 @@ export default class Task extends React.Component {
     };
   }
 
-  // componentDidUpdate(prevProps) {
-  //   const { tick, id, paused } = this.props;
-  //   if (prevProps.paused !== paused) {
-  //     setInterval(tick(id), 1000);
-  //   }
-  // }
+  componentWillUnmount() {
+    const { timerId } = this.props;
+    clearInterval(timerId);
+  }
 
   onLabelChange = (e) => {
     this.setState({
@@ -72,12 +71,10 @@ export default class Task extends React.Component {
       onPaused,
     } = this.props;
 
-    let classNames = "";
-    if (checked) {
-      classNames += "completed";
-    } else if (editing) {
-      classNames += "editing";
-    }
+    const btnClass = classNames({
+      completed: checked,
+      editing,
+    });
 
     let dis = "";
     if (!paused) {
@@ -87,7 +84,7 @@ export default class Task extends React.Component {
     }
 
     return (
-      <li className={classNames}>
+      <li className={btnClass}>
         <div className="view">
           <input className="toggle" type="checkbox" onClick={onToggleCheck} defaultChecked={checked} />
           <label>

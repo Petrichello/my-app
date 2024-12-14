@@ -10,10 +10,16 @@ import Footer from "./components/Footer/Footer";
 export default class App extends React.Component {
   maxId = 100;
 
+  timerId = 0;
+
   state = {
     taskData: [],
     filter: "all",
   };
+
+  componentWillUnmount() {
+    clearInterval(this.timerId);
+  }
 
   addTask = (text, min, sec) => {
     if (text !== "") {
@@ -128,11 +134,11 @@ export default class App extends React.Component {
   };
 
   tick = (id) => {
-    const timerId = setInterval(() => {
+    this.timerId = setInterval(() => {
       const { taskData } = this.state;
       const idx = taskData.findIndex((el) => el.id === id);
       const { min, sec, paused } = taskData[idx];
-      if (paused) return clearInterval(timerId);
+      if (paused) return clearInterval(this.timerId);
 
       if ((min === 0 || min === "0") && sec === 0) {
         this.setState(() => {
@@ -145,7 +151,7 @@ export default class App extends React.Component {
             taskData: newArr,
           };
         });
-        return clearInterval(timerId);
+        return clearInterval(this.timerId);
       }
 
       if (sec === 0) {
@@ -211,6 +217,7 @@ export default class App extends React.Component {
         <NewTaskForm addTask={this.addTask} />
         <section className="main">
           <TaskList
+            timerId={this.timerId}
             tasks={visibleTasks}
             onDeleted={this.deleteTask}
             onToggleCheck={this.onToggleCheck}
