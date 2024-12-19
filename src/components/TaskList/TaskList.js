@@ -1,41 +1,40 @@
-import React from "react";
-
 import Task from "../Task/Task";
 
 import "./TaskList.css";
 
-export default class TaskList extends React.Component {
-  static defaultProps = {
-    tasks: [],
-  };
+function TaskList({
+  tasks = [],
+  onDeleted,
+  onToggleCheck,
+  onToggleEdit,
+  editTask,
+  onPaused,
+  offPaused,
+  tick,
+  updateTimer,
+  timerId,
+}) {
+  const elements = tasks.map((element) => {
+    const { id } = element;
 
-  constructor(props) {
-    super(props);
-    this.state = {};
-  }
+    return (
+      <Task
+        key={id}
+        {...element}
+        timerId={timerId}
+        onDeleted={() => onDeleted(id)}
+        onToggleCheck={() => onToggleCheck(id)}
+        onToggleEdit={() => onToggleEdit(id)}
+        onPaused={() => onPaused(id)}
+        offPaused={() => offPaused(id)}
+        tick={() => tick(id)}
+        editTask={editTask}
+        updateTimer={updateTimer}
+      />
+    );
+  });
 
-  render() {
-    const { tasks, onDeleted, onToggleCheck, onToggleEdit, editTask, onPaused, offPaused, tick, timerId } = this.props;
-
-    const elements = tasks.map((element) => {
-      const { id } = element;
-
-      return (
-        <Task
-          key={id}
-          {...element}
-          timerId={timerId}
-          onDeleted={() => onDeleted(id)}
-          onToggleCheck={() => onToggleCheck(id)}
-          onToggleEdit={() => onToggleEdit(id)}
-          onPaused={() => onPaused(id)}
-          offPaused={() => offPaused(id)}
-          tick={() => tick(id)}
-          editTask={editTask}
-        />
-      );
-    });
-
-    return <ul className="todo-list">{elements}</ul>;
-  }
+  return <ul className="todo-list">{elements}</ul>;
 }
+
+export default TaskList;

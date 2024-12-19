@@ -1,201 +1,193 @@
 import "./index.css";
 
 import { createRoot } from "react-dom/client";
-import React from "react";
+import { useState } from "react";
 
 import NewTaskForm from "./components/NewTaskForm/NewTaskForm";
 import TaskList from "./components/TaskList/TaskList";
 import Footer from "./components/Footer/Footer";
 
-export default class App extends React.Component {
-  maxId = 100;
+function App() {
+  const [taskData, setTaskData] = useState([]);
+  const [filterName, setFilter] = useState("all");
+  const [maxId, setMaxId] = useState(400);
 
-  timerId = 0;
-
-  state = {
-    taskData: [],
-    filter: "all",
-  };
-
-  componentWillUnmount() {
-    clearInterval(this.timerId);
-  }
-
-  addTask = (text, min, sec) => {
-    if (text !== "") {
-      const newTask = this.createTask(text, min, sec);
-
-      this.setState(({ taskData }) => {
-        const newArr = [...taskData, newTask];
-
-        return {
-          taskData: newArr,
-        };
-      });
-    }
-  };
-
-  editTask = (id, text) => {
-    this.setState(({ taskData }) => {
-      const idx = taskData.findIndex((el) => el.id === id);
-      const oldTask = taskData[idx];
-      const newTask = { ...oldTask, label: text, editing: false };
-
-      const newArr = [...taskData.slice(0, idx), newTask, ...taskData.slice(idx + 1)];
-
-      return {
-        taskData: newArr,
-      };
-    });
-  };
-
-  deleteTask = (id) => {
-    this.setState(({ taskData }) => {
-      const idx = taskData.findIndex((el) => el.id === id);
-
-      const newArray = [...taskData.slice(0, idx), ...taskData.slice(idx + 1)];
-
-      return {
-        taskData: newArray,
-      };
-    });
-  };
-
-  onToggleCheck = (id) => {
-    this.setState(({ taskData }) => {
-      const idx = taskData.findIndex((el) => el.id === id);
-      const oldTask = taskData[idx];
-      const newTask = { ...oldTask, checked: !oldTask.checked };
-
-      const newArr = [...taskData.slice(0, idx), newTask, ...taskData.slice(idx + 1)];
-
-      return {
-        taskData: newArr,
-      };
-    });
-  };
-
-  clearCompleted = () => {
-    this.setState(({ taskData }) => {
-      const newArray = taskData.filter((task) => !task.checked);
-
-      return {
-        taskData: newArray,
-      };
-    });
-  };
-
-  onToggleEdit = (id) => {
-    this.setState(({ taskData }) => {
-      const idx = taskData.findIndex((el) => el.id === id);
-      const oldTask = taskData[idx];
-      const newTask = { ...oldTask, editing: !oldTask.editing };
-
-      const newArr = [...taskData.slice(0, idx), newTask, ...taskData.slice(idx + 1)];
-
-      return {
-        taskData: newArr,
-      };
-    });
-  };
-
-  onFilterChange = (filter) => {
-    this.setState({ filter });
-  };
-
-  onPaused = (id) => {
-    this.setState(({ taskData }) => {
-      const idx = taskData.findIndex((el) => el.id === id);
-      const oldTask = taskData[idx];
-      const newTask = { ...oldTask, paused: true };
-
-      const newArr = [...taskData.slice(0, idx), newTask, ...taskData.slice(idx + 1)];
-
-      return {
-        taskData: newArr,
-      };
-    });
-  };
-
-  offPaused = (id) => {
-    const { taskData } = this.state;
-    this.setState(() => {
-      const idx = taskData.findIndex((el) => el.id === id);
-      const oldTask = taskData[idx];
-      const newTask = { ...oldTask, paused: false };
-
-      const newArr = [...taskData.slice(0, idx), newTask, ...taskData.slice(idx + 1)];
-
-      return {
-        taskData: newArr,
-      };
-    });
-    this.tick(id);
-  };
-
-  tick = (id) => {
-    this.timerId = setInterval(() => {
-      const { taskData } = this.state;
-      const idx = taskData.findIndex((el) => el.id === id);
-      const { min, sec, paused } = taskData[idx];
-      if (paused) return clearInterval(this.timerId);
-
-      if ((min === 0 || min === "0") && sec === 0) {
-        this.setState(() => {
-          const oldTask = taskData[idx];
-          const newTask = { ...oldTask, paused: true };
-
-          const newArr = [...taskData.slice(0, idx), newTask, ...taskData.slice(idx + 1)];
-
-          return {
-            taskData: newArr,
-          };
-        });
-        return clearInterval(this.timerId);
-      }
-
-      if (sec === 0) {
-        this.setState(() => {
-          const oldTask = taskData[idx];
-          const newTask = { ...oldTask, min: min - 1, sec: 59 };
-
-          const newArr = [...taskData.slice(0, idx), newTask, ...taskData.slice(idx + 1)];
-
-          return {
-            taskData: newArr,
-          };
-        });
-      } else {
-        this.setState(() => {
-          const oldTask = taskData[idx];
-          const newTask = { ...oldTask, sec: sec - 1 };
-
-          const newArr = [...taskData.slice(0, idx), newTask, ...taskData.slice(idx + 1)];
-
-          return {
-            taskData: newArr,
-          };
-        });
-      }
-      return 1;
-    }, 1000);
-  };
-
-  createTask(label, min, sec) {
+  const createTask = (label, min, sec) => {
+    setMaxId((num) => num + 1);
     return {
       label,
       editing: false,
       checked: false,
       creationTime: new Date(),
-      id: this.maxId++,
+      id: maxId,
       min,
       sec,
       paused: true,
     };
-  }
+  };
 
-  filter(items, filter) {
-    switch (filter) {
+  const addTask = (text, min, sec) => {
+    if (text !== "") {
+      const newTask = createTask(text, min, sec);
+      setTaskData((s) => {
+        const newArr = [...s, newTask];
+        return newArr;
+      });
+    }
+  };
+
+  const editTask = (id, text) => {
+    setTaskData((s) => {
+      const idx = s.findIndex((el) => el.id === id);
+      const oldTask = s[idx];
+      const newTask = { ...oldTask, label: text, editing: false };
+
+      const newArr = [...s.slice(0, idx), newTask, ...s.slice(idx + 1)];
+      return newArr;
+    });
+  };
+
+  const deleteTask = (id) => {
+    setTaskData((s) => {
+      const idx = s.findIndex((el) => el.id === id);
+
+      const newArray = [...s.slice(0, idx), ...s.slice(idx + 1)];
+      return newArray;
+    });
+  };
+
+  const onToggleCheck = (id) => {
+    setTaskData((s) => {
+      const idx = s.findIndex((el) => el.id === id);
+      const oldTask = s[idx];
+      const newTask = { ...oldTask, checked: !oldTask.checked };
+
+      const newArr = [...s.slice(0, idx), newTask, ...s.slice(idx + 1)];
+
+      return newArr;
+    });
+  };
+
+  const clearCompleted = () => {
+    setTaskData((s) => {
+      const newArray = s.filter((task) => !task.checked);
+      return newArray;
+    });
+  };
+
+  const onToggleEdit = (id) => {
+    setTaskData((s) => {
+      const idx = s.findIndex((el) => el.id === id);
+      const oldTask = s[idx];
+      const newTask = { ...oldTask, editing: !oldTask.editing };
+
+      const newArr = [...s.slice(0, idx), newTask, ...s.slice(idx + 1)];
+      return newArr;
+    });
+  };
+
+  const onFilterChange = (filter) => {
+    setFilter(filter);
+  };
+
+  const tick = (id) => {
+    const idx = taskData.findIndex((el) => el.id === id);
+    const { min, sec, paused } = taskData[idx];
+    if (paused) return;
+
+    if ((min === 0 || min === "0") && sec === 0) {
+      setTaskData((s) => {
+        const oldTask = s[idx];
+        const newTask = { ...oldTask, paused: true };
+
+        const newArr = [...s.slice(0, idx), newTask, ...s.slice(idx + 1)];
+        return newArr;
+      });
+      return;
+    }
+
+    if (sec === 0) {
+      setTaskData((s) => {
+        const oldTask = s[idx];
+        const newTask = { ...oldTask, min: min - 1, sec: 59 };
+
+        const newArr = [...s.slice(0, idx), newTask, ...s.slice(idx + 1)];
+        return newArr;
+      });
+    } else {
+      setTaskData((s) => {
+        const oldTask = s[idx];
+        const newTask = { ...oldTask, sec: sec - 1 };
+
+        const newArr = [...s.slice(0, idx), newTask, ...s.slice(idx + 1)];
+        return newArr;
+      });
+    }
+  };
+
+  const onPaused = (id) => {
+    setTaskData((s) => {
+      const idx = s.findIndex((el) => el.id === id);
+      const oldTask = s[idx];
+      const newTask = { ...oldTask, paused: true };
+
+      const newArr = [...s.slice(0, idx), newTask, ...s.slice(idx + 1)];
+      return newArr;
+    });
+  };
+
+  const offPaused = (id) => {
+    setTaskData((s) => {
+      const idx = s.findIndex((el) => el.id === id);
+      const oldTask = s[idx];
+      const newTask = { ...oldTask, paused: false };
+
+      const newArr = [...s.slice(0, idx), newTask, ...s.slice(idx + 1)];
+      return newArr;
+    });
+  };
+
+  const updateTimer = (id, seconds) => {
+    const idx = taskData.findIndex((el) => el.id === id);
+    const { min, sec } = taskData[idx];
+    const leftSeconds = min * 60 + sec;
+
+    if (seconds >= 1 && seconds < 60 && seconds < leftSeconds) {
+      setTaskData((s) => {
+        const oldTask = s[idx];
+        const newTask = { ...oldTask, sec: sec - seconds };
+
+        const newArr = [...s.slice(0, idx), newTask, ...s.slice(idx + 1)];
+        return newArr;
+      });
+      return;
+    }
+
+    if (seconds >= 60 && seconds < leftSeconds) {
+      setTaskData((s) => {
+        const oldTask = s[idx];
+        const newTask = { ...oldTask, sec: Math.floor(seconds / 60), min: seconds % 60 };
+
+        const newArr = [...s.slice(0, idx), newTask, ...s.slice(idx + 1)];
+        return newArr;
+      });
+      return;
+    }
+
+    if (min !== 0 && sec !== 0 && seconds >= leftSeconds) {
+      setTaskData((s) => {
+        const oldTask = s[idx];
+        const newTask = { ...oldTask, sec: 0, min: 0 };
+
+        const newArr = [...s.slice(0, idx), newTask, ...s.slice(idx + 1)];
+        return newArr;
+      });
+      localStorage.removeItem(`task ${id}`);
+    }
+  };
+
+  const changeFilterName = (items, name) => {
+    switch (name) {
       case "all":
         return items;
       case "active":
@@ -205,40 +197,39 @@ export default class App extends React.Component {
       default:
         return items;
     }
-  }
+  };
 
-  render() {
-    const { taskData, filter } = this.state;
-    const taskCount = taskData.filter((el) => !el.checked).length;
-    const visibleTasks = this.filter(taskData, filter);
+  const taskCount = taskData.filter((el) => !el.checked).length;
+  const visibleTasks = changeFilterName(taskData, filterName);
 
-    return (
-      <>
-        <NewTaskForm addTask={this.addTask} />
-        <section className="main">
-          <TaskList
-            timerId={this.timerId}
-            tasks={visibleTasks}
-            onDeleted={this.deleteTask}
-            onToggleCheck={this.onToggleCheck}
-            onToggleEdit={this.onToggleEdit}
-            editTask={this.editTask}
-            onPaused={this.onPaused}
-            offPaused={this.offPaused}
-            tick={this.tick}
-          />
-          <Footer
-            tasks={taskCount}
-            filter={filter}
-            onFilterChange={this.onFilterChange}
-            clearCompleted={this.clearCompleted}
-          />
-        </section>
-      </>
-    );
-  }
+  return (
+    <>
+      <NewTaskForm addTask={addTask} />
+      <section className="main">
+        <TaskList
+          tasks={visibleTasks}
+          onDeleted={deleteTask}
+          onToggleCheck={onToggleCheck}
+          onToggleEdit={onToggleEdit}
+          editTask={editTask}
+          onPaused={onPaused}
+          offPaused={offPaused}
+          tick={tick}
+          updateTimer={updateTimer}
+        />
+        <Footer
+          tasks={taskCount}
+          filterName={changeFilterName()}
+          onFilterChange={onFilterChange}
+          clearCompleted={clearCompleted}
+        />
+      </section>
+    </>
+  );
 }
 
 const app = document.querySelector(".todoapp");
 const root = createRoot(app);
 root.render(<App />);
+
+export default App;

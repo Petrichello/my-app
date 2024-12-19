@@ -1,83 +1,64 @@
-import React from "react";
+import { useState } from "react";
 import "./NewTaskForm.css";
-import PropTypes from "prop-types";
 
-export default class NewTaskForm extends React.Component {
-  static defaultProps = {
-    addTask: () => {},
+function NewTaskForm({ addTask = () => {} }) {
+  const [label, setLabel] = useState("");
+  const [min, setMin] = useState("");
+  const [sec, setSec] = useState("");
+
+  const onLabelChange = (e) => {
+    setLabel(e.target.value);
   };
 
-  static propTypes = {
-    addTask: PropTypes.func,
+  const onMinChange = (e) => {
+    setMin(e.target.value);
   };
 
-  state = {
-    label: "",
-    min: "",
-    sec: "",
+  const onSecChange = (e) => {
+    setSec(e.target.value);
   };
 
-  onLabelChange = (e) => {
-    this.setState({
-      label: e.target.value,
-    });
-  };
-
-  onMinChange = (e) => {
-    this.setState({
-      min: e.target.value,
-    });
-  };
-
-  onSecChange = (e) => {
-    this.setState({
-      sec: e.target.value,
-    });
-  };
-
-  onSubmit = (e) => {
-    const { addTask } = this.props;
-    const { label, min, sec } = this.state;
+  const onSubmit = (e) => {
     e.preventDefault();
     if (label !== "" && min !== "" && sec !== "") {
       addTask(label.trim(), min.trim(), sec.trim());
-      this.setState({
-        label: "",
-        min: "",
-        sec: "",
-      });
+      setLabel("");
+      setMin("");
+      setSec("");
     }
   };
 
-  render() {
-    const { label, min, sec } = this.state;
-    return (
-      <header className="header">
-        <h1>todos</h1>
-        <form className="new-todo-form" type="sumbit" onSubmit={this.onSubmit}>
-          <input
-            className="new-todo"
-            placeholder="What needs to be done?"
-            onChange={this.onLabelChange}
-            value={label}
-          />
-          <input
-            className="new-todo-form__timer"
-            type="number"
-            placeholder="Min"
-            onChange={this.onMinChange}
-            value={min}
-          />
-          <input
-            className="new-todo-form__timer"
-            type="number"
-            placeholder="Sec"
-            onChange={this.onSecChange}
-            value={sec}
-          />
-          <input className="hidden" type="submit" />
-        </form>
-      </header>
-    );
-  }
+  return (
+    <header className="header">
+      <h1>todos</h1>
+      <form name="new-todo-form" className="new-todo-form" type="sumbit" onSubmit={onSubmit}>
+        <input
+          className="new-todo"
+          name="new-todo"
+          placeholder="What needs to be done?"
+          onChange={onLabelChange}
+          value={label}
+        />
+        <input
+          className="new-todo-form__timer"
+          name="new-todo-form__min"
+          type="number"
+          placeholder="Min"
+          onChange={onMinChange}
+          value={min}
+        />
+        <input
+          className="new-todo-form__timer"
+          name="new-todo-form__sec"
+          type="number"
+          placeholder="Sec"
+          onChange={onSecChange}
+          value={sec}
+        />
+        <input className="hidden" type="submit" />
+      </form>
+    </header>
+  );
 }
+
+export default NewTaskForm;
